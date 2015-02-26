@@ -13,8 +13,14 @@ require 'pp'
   config.access_token        = ACCESS_TOKEN
   config.access_token_secret = ACCESS_TOKEN_SECRET
 end
+ client_stream = Twitter::Streaming::Client.new do |config|
+  config.consumer_key        = CONSUMER_KEY
+  config.consumer_secret     = CONSUMER_SECRET
+  config.access_token        = ACCESS_TOKEN
+  config.access_token_secret = ACCESS_TOKEN_SECRET
+end
  #はらだ語録
- rem = ["まじで！？","ほんまそれな","しょうみだるい","ゆうていけるっしょ","ばりおもろいやん","だるいってほんまに","え、きっしょ笑","それは↑な↓いわ"]
+ rem = ["まじで！？","ほんまそれな","しょうみだるい","ゆうていけるっしょ","ばりおもろいやん","だるいってほんまに","え、きっしょ笑","それは↑な↓いわ","ハイライト行かへん？","なか卯きてや","野菜ジュース買っといてや"]
  len = rem.length
 
 f=open("twitter.txt","r")
@@ -24,7 +30,8 @@ p last_mention
 
 #a = client.mentions_timeline(:since_id=>last_mention)a
 a = client.home_timeline(:since_id=>last_mention)
-a.each {|n|
+
+a.each do |n|
   if n.user.screen_name != "honmani_harada"
     p n.user.screen_name
     reply="@"+n.user.screen_name+" #{rem[rand(0..len-1)]}"
@@ -33,10 +40,24 @@ a.each {|n|
       last_mention=n.id
     end
   end
-}
+end
 f=open("twitter.txt", "w")
 f.puts(last_mention)
 f.close
+
+
+#はらだふぁぼ語録
+fav = ["まじで！？しょうみおもんないやろｗ","ふぁぼったならハイライト行かへん？それかとんかつ食いたいなー","じゃがいも食べたい","おっｗふぁぼやんｗほんまにありがとうなｗ"]
+favlen = fav.length
+#ファボられに反応
+client_stream.user do |object|
+  object_name =  object.name.to_s if object.is_a?(Twitter::Streaming::Event)
+  object_source =  object.source.screen_name if object.is_a?(Twitter::Streaming::Event)
+  if object.is_a?(Twitter::Streaming::Event) && object_name == "favorite"
+    client.update("@#{object_source} #{fav[rand(0..favlen-1)]}")
+  end
+end
+
 
 #client.mentions_timeline.each{|rep|
 #  user_id = rep.user.screen_name
