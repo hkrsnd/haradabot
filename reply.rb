@@ -12,6 +12,10 @@ begin
     name = status.user.name
     contents = status.text
     status_id = status.id
+
+    status do |a|
+      p a
+    end
  
     # リツイート以外を取得
     if !contents.index("RT")
@@ -27,7 +31,7 @@ begin
       end
  
       # 自分へのリプであれば
-      if contents =~ /^@hoge\s*/
+      if contents =~ /^@honmani_harada\s*/
         if contents =~ /ほげ/
           text = "ほげほげ\n#{str_time}"
           bot.fav(status_id:status_id)

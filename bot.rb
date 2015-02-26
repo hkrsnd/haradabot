@@ -17,21 +17,18 @@ class Bot
       config.access_token_secret = keys["access_token_secret"]
     end
  
-    TweetStream.configure do |config|
+    @client_stream = Twitter::Streaming::Client.new do |config|
       config.consumer_key = keys["api_key"]
       config.consumer_secret = keys["api_secret"]
-      config.oauth_token = keys["access_token"]
-      config.oauth_token_secret = keys["access_token_secret"]
-      config.auth_method = :oauth
+      config.access_token = keys["access_token"]
+      config.access_token_secret = keys["access_token_secret"]
     end
- 
-    @timeline = TweetStream::Client.new
   end
  
   def post(text = "",twitter_id:nil,status_id:nil)
       if status_id
         rep_text = "@#{twitter_id} #{text}"
-        @client.update(rep_text,{:in_reply_to_status_id => status_id})
+        @client.update(rep_text,:in_reply_to_status_id => status_id)
         puts "#{rep_text}"
       else
         @client.update(text)

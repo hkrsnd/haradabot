@@ -1,5 +1,6 @@
 require 'rubygems'    # ←Ruby 1.9では不要
 require 'twitter'
+require 'tweetstream'
 require 'pp'
 
   CONSUMER_KEY = 'eugILOUDrNKpnhBZ7jXrn9CoH'
@@ -19,20 +20,72 @@ end
   config.access_token        = ACCESS_TOKEN
   config.access_token_secret = ACCESS_TOKEN_SECRET
 end
+  TweetStream.configure do |config|
+    config.consumer_key = CONSUMER_KEY
+    config.consumer_secret = CONSUMER_SECRET
+    config.oauth_token = ACCESS_TOKEN
+    config.oauth_token_secret = ACCESS_TOKEN_SECRET
+    config.auth_method = :oauth
+  end
+ 
+  @timeline = TweetStream::Client.new
+
  #はらだ語録
- rem = ["まじで！？","ほんまそれな","しょうみだるい","ゆうていけるっしょ","ばりおもろいやん","だるいってほんまに","え、きっしょ笑","それは↑な↓いわ","ハイライト行かへん？","なか卯きてや","野菜ジュース買っといてや"]
- len = rem.length
+  rem = ["ほんまそれな"]
+  fav = ["おっｗふぁぼやんｗほんまにありがとうなｗ"]
+  File.open("./words.txt","r:utf-8") do |f|
+    #各行読み込み
+    f.each_line do |line|
+      #語録更新
+      rem.push(line[0,line.length-1])
+    end
+  end
 
-f=open("twitter.txt","r")
-last_mention=[f.gets.to_i,1].max
-f.close
-p last_mention
+  @timeline.userstream do |status|
+    twitter_id = status.user.screen_name
+    name = status.user.name
+    contents = status.text
+    status_id = status.id
 
-#a = client.mentions_timeline(:since_id=>last_mention)a
-a = client.home_timeline(:since_id=>last_mention)
+    #リプライに反応
+    if contents =~ /^@honmani_harada\s*/ then
+      #リプ語録登録フォーマットの形か否か
+      if contents =~ /^@honmani_harada\sst/ then
+        newword = contents[18..contents.length]
+        p newword
+        #はらだくん学習
+        rem.push(newword)
+        #words.txt更新
+        File.open("./words.txt","a:utf-8") do |f|
+          f.puts(newword)
+        end
+        client.update("@"+twitter_id+" "+newword + " 了解んご また話そうや", :in_reply_to_status_id=>status_id)
+      #ファボ語録用フォーマットか否か
+      elsif contents =~ /^@honmani_harada\sfv/ then
+        newword = contents[18..contents.length]
+        p newword
+        #はらだくん学習
+        fav.push(newword)
+        #fwords.txt更新
+        File.open("./fwords.txt","a:utf-8") do |f|
+          f.puts(newword)
+        end
+        client.update("@"+twitter_id+" "+newword + " 了解んご またふぁぼってや", :in_reply_to_status_id=>status_id)
+      else
+        reply="@"+twitter_id+" #{rem[rand(0..rem.length-1)]}"
+        client.update(reply,:in_reply_to_status_id=>status_id)
+      end
+    #リプライ以外にもたまに雑絡み
+    elsif (rand(1..5) == 3) then #確率５分の１
+        reply="@"+twitter_id+" #{rem[rand(0..rem.length-1)]}"
+        client.update(reply,:in_reply_to_status_id=>status_id)
+    end
+  end
 
-a.each do |n|
-  if n.user.screen_name != "honmani_harada"
+=begin
+a = client.mentions_timeline(:since_id=>last_mention)
+client.home_timeline(:since_id=>last_mention) do |n|
+ if n.user.screen_name != "honmani_harada"
     p n.user.screen_name
     reply="@"+n.user.screen_name+" #{rem[rand(0..len-1)]}"
     client.update(reply,:in_reply_to_status_id=>n.id)
@@ -41,22 +94,7 @@ a.each do |n|
     end
   end
 end
-f=open("twitter.txt", "w")
-f.puts(last_mention)
-f.close
-
-
-#はらだふぁぼ語録
-fav = ["まじで！？しょうみおもんないやろｗ","ふぁぼったならハイライト行かへん？それかとんかつ食いたいなー","じゃがいも食べたい","おっｗふぁぼやんｗほんまにありがとうなｗ"]
-favlen = fav.length
-#ファボられに反応
-client_stream.user do |object|
-  object_name =  object.name.to_s if object.is_a?(Twitter::Streaming::Event)
-  object_source =  object.source.screen_name if object.is_a?(Twitter::Streaming::Event)
-  if object.is_a?(Twitter::Streaming::Event) && object_name == "favorite"
-    client.update("@#{object_source} #{fav[rand(0..favlen-1)]}")
-  end
-end
+=end
 
 
 #client.mentions_timeline.each{|rep|
