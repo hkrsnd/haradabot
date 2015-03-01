@@ -34,6 +34,7 @@ end
  #はらだ語録
   rem = ["ほんまそれな"]
   fav = ["おっｗふぁぼやんｗほんまにありがとうなｗ"]
+  freq = ["おはよ"]
 
   File.open("./words.txt","r:utf-8") do |f|
     #各行読み込み
@@ -49,7 +50,11 @@ end
       fav.push(line[0,line.length-1])
     end
   end
-
+  File.open("./freq.txt","r:utf-8") do |f|
+    f.each_line do |line|
+      freq.push(line[0,line.length-1])
+    end
+  end
 
   @timeline.userstream do |status|
     twitter_id = status.user.screen_name
@@ -88,20 +93,34 @@ end
         end
         client.update("@"+twitter_id+" "+"\"" + newword + "\"" + " 了解んご またふぁぼってや", :in_reply_to_status_id=>status_id)
       else
-        reply="@"+twitter_id+" #{rem[rand(0..rem.length-1)]}"
-        client.update(reply,:in_reply_to_status_id=>status_id)
+        f_flag = 0
+        #定型が入ってるかどうか
+        freq.each do |f|
+          if contents =~ /#{f}/ then
+            f_flag = 1
+            client.update("@"+twitter_id+" #{f}",:in_reply_to_status_id=>status_id)
+            p f
+            break
+          end
+        end
+        #普通に返すだけのとき
+        if f_flag == 0
+          reply="@"+twitter_id+" #{rem[rand(0..rem.length-1)]}"
+          client.update(reply,:in_reply_to_status_id=>status_id)
+          p reply
+        end
       end
 
 
     #リプライ以外にもたまに雑絡み
 
     #普通に絡む
-    elsif rand(1..5) == 1 then
+    elsif rand(1..8) == 1 then
       reply="@"+twitter_id+" #{rem[rand(0..rem.length-1)]}"
       client.update(reply,:in_reply_to_status_id=>status_id)
 
     #勝手に学習するとき
-    elsif rand(1..5) == 2 then
+    elsif rand(1..8) == 2 then
       #誰かへのリプのとき
       if contents =~ /^@\w*/ then
         #本文取り出し
@@ -129,6 +148,9 @@ end
           client.update("@"+twitter_id + " " + "\"" + newword + "\"" + " それおもろいな 俺も使うわ", :in_reply_to_status_id=>status_id)
         end
       end
+    elsif rand(1..10) == 3 then
+      client.update(rem[rand(0..rem.length-1)])
+      p "ひとりごと"
     #何もしない時
     else
       p "何もしない"
