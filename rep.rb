@@ -33,6 +33,7 @@ end
  #はらだ語録
   rem = ["ほんまそれな"]
   fav = ["おっｗふぁぼやんｗほんまにありがとうなｗ"]
+
   File.open("./words.txt","r:utf-8") do |f|
     #各行読み込み
     f.each_line do |line|
@@ -40,6 +41,14 @@ end
       rem.push(line[0,line.length-1])
     end
   end
+  File.open("./fwords.txt","r:utf-8") do |f|
+    #各行読み込み
+    f.each_line do |line|
+      #語録更新
+      fav.push(line[0,line.length-1])
+    end
+  end
+
 
   @timeline.userstream do |status|
     twitter_id = status.user.screen_name
@@ -47,11 +56,17 @@ end
     contents = status.text
     status_id = status.id
 
+    #自分のツイートは除外する
+    if twitter_id == "honmani_harada" then
+      p "自分のツイートには絡まない"
+      next
+    end
+
     #リプライに反応
     if contents =~ /^@honmani_harada\s*/ then
       #リプ語録登録フォーマットの形か否か
-      if contents =~ /^@honmani_harada\sst/ then
-        newword = contents[18..contents.length]
+      if contents =~ /^@honmani_harada\s*\?|^@honmani_harada\s*\？/ then
+        newword = contents[17..contents.length]
         p newword
         #はらだくん学習
         rem.push(newword)
@@ -61,8 +76,8 @@ end
         end
         client.update("@"+twitter_id+" "+newword + " 了解んご また話そうや", :in_reply_to_status_id=>status_id)
       #ファボ語録用フォーマットか否か
-      elsif contents =~ /^@honmani_harada\sfv/ then
-        newword = contents[18..contents.length]
+      elsif contents =~ /^@honmani_harada\s*\!|@honmani_harada\s*！/ then
+        newword = contents[17..contents.length]
         p newword
         #はらだくん学習
         fav.push(newword)
@@ -70,15 +85,52 @@ end
         File.open("./fwords.txt","a:utf-8") do |f|
           f.puts(newword)
         end
-        client.update("@"+twitter_id+" "+newword + " 了解んご またふぁぼってや", :in_reply_to_status_id=>status_id)
+        client.update("@"+twitter_id+" "+"\"" + newword + "\"" + " 了解んご またふぁぼってや", :in_reply_to_status_id=>status_id)
       else
         reply="@"+twitter_id+" #{rem[rand(0..rem.length-1)]}"
         client.update(reply,:in_reply_to_status_id=>status_id)
       end
+
+
     #リプライ以外にもたまに雑絡み
-    elsif (rand(1..5) == 3) then #確率５分の１
-        reply="@"+twitter_id+" #{rem[rand(0..rem.length-1)]}"
-        client.update(reply,:in_reply_to_status_id=>status_id)
+
+    #普通に絡む
+    elsif rand(1..5) == 1 then
+      reply="@"+twitter_id+" #{rem[rand(0..rem.length-1)]}"
+      client.update(reply,:in_reply_to_status_id=>status_id)
+
+    #勝手に学習するとき
+    elsif rand(1..5) == 2 then
+      #誰かへのリプのとき
+      if contents =~ /^@\w*/ then
+        #本文取り出し
+        idlen = contents.split(' ')[0].length
+        newword = contents[idlen+1..contents.length-1]
+        #はらだくん学習
+        rem.push(newword)
+        #words.txt更新
+        File.open("./words.txt","a:utf-8") do |f|
+          f.puts(newword)
+          client.update("@" + twitter_id + " " + "\"" +newword + "\"" + " それおもろいな 俺も使うわ", :in_reply_to_status_id=>status_id)
+        end
+      #RTは無視する
+      elsif contents =~ /^RT/ then
+        p "RTには絡まない"
+      #リプでもRTでもないツイートを奪う
+      else
+        newword = contents
+        p newword
+        #はらだくん学習
+        rem.push(newword)
+        #words.txt更新
+        File.open("./words.txt","a:utf-8") do |f|
+          f.puts(newword)
+          client.update("@"+twitter_id + " " + "\"" + newword + "\"" + " それおもろいな 俺も使うわ", :in_reply_to_status_id=>status_id)
+        end
+      end
+    #何もしない時
+    else
+      p "何もしない"
     end
   end
 

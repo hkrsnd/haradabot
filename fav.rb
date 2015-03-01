@@ -29,6 +29,9 @@ end
   end
 fav = ["まじで！？しょうみおもんないやろｗ"]
 
+
+#ファボられに反応
+  client_stream.user do |object|
   File.open("./fwords.txt","r:utf-8") do |f|
     #各行読み込み
     f.each_line do |line|
@@ -36,9 +39,6 @@ fav = ["まじで！？しょうみおもんないやろｗ"]
       fav.push(line[0,line.length-1])
     end
   end
-
-#ファボられに反応
-  client_stream.user do |object|
     object_name =  object.name.to_s if object.is_a?(Twitter::Streaming::Event)
     object_source =  object.source.screen_name if object.is_a?(Twitter::Streaming::Event)
     if object.is_a?(Twitter::Streaming::Event) && object_name == "favorite"
