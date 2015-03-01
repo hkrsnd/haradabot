@@ -35,6 +35,7 @@ end
   rem = ["ほんまそれな"]
   fav = ["おっｗふぁぼやんｗほんまにありがとうなｗ"]
   freq = ["おはよ"]
+  help = ["！","ｗ","( ⌒,_ゝ⌒)","(ง ˙ω˙)ว ","ヽ(•̀ω•́ )ゝ✧","(ﾉ≧ڡ≦)","ʕ•ᴥ•ʔ",""]
 
   File.open("./words.txt","r:utf-8") do |f|
     #各行読み込み
@@ -98,8 +99,8 @@ end
         freq.each do |f|
           if contents =~ /#{f}/ then
             f_flag = 1
-            client.update("@"+twitter_id+" #{f}",:in_reply_to_status_id=>status_id)
-            p f
+            client.update("@"+twitter_id+" #{f}"+help[rand(0..7)],:in_reply_to_status_id=>status_id)
+            p f + help[rand(0..7)]
             break
           end
         end
