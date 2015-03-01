@@ -1,3 +1,4 @@
+# encoding:utf-8
 require 'rubygems'    # ←Ruby 1.9では不要
 require 'twitter'
 require 'tweetstream'
