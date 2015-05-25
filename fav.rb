@@ -4,10 +4,6 @@ require 'twitter'
 require 'tweetstream'
 require 'pp'
 
-  CONSUMER_KEY = 'eugILOUDrNKpnhBZ7jXrn9CoH'
-  CONSUMER_SECRET = 'Aa0yrxC0tguMO5HGG3TbZDh8t4PZ4mWcZiLb9Mti0JRH13azlh'
-  ACCESS_TOKEN = '3037615388-BvSd73ZvSKLBVFKj8UnZ6mvXr3hcBqpSIM6bZ24'
-  ACCESS_TOKEN_SECRET = 'YHdc2G4IXb9wComlxSKYsN6yWOKOnhQBPYdmnB7wolje0'
 # ログイン
  client = Twitter::REST::Client.new do |config|
   config.consumer_key        = CONSUMER_KEY
@@ -29,6 +25,7 @@ end
     config.auth_method = :oauth
   end
 fav = ["まじで！？しょうみおもんないやろｗ"]
+  @timeline = TweetStream::Client.new
 
 
 #ファボられに反応
@@ -42,7 +39,7 @@ fav = ["まじで！？しょうみおもんないやろｗ"]
   end
     object_name =  object.name.to_s if object.is_a?(Twitter::Streaming::Event)
     object_source =  object.source.screen_name if object.is_a?(Twitter::Streaming::Event)
-    if object.is_a?(Twitter::Streaming::Event) && object_name == "favorite"
+    if object.is_a?(Twitter::Streaming::Event) && object_name == "favorite" && object_source != "honmani_harada"
       client.update("@#{object_source} #{fav[rand(0..fav.length-1)]}")
     end
   end

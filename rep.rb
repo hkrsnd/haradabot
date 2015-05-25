@@ -4,10 +4,10 @@ require 'twitter'
 require 'tweetstream'
 require 'pp'
 
-  CONSUMER_KEY = 'eugILOUDrNKpnhBZ7jXrn9CoH'
-  CONSUMER_SECRET = 'Aa0yrxC0tguMO5HGG3TbZDh8t4PZ4mWcZiLb9Mti0JRH13azlh'
-  ACCESS_TOKEN = '3037615388-BvSd73ZvSKLBVFKj8UnZ6mvXr3hcBqpSIM6bZ24'
-  ACCESS_TOKEN_SECRET = 'YHdc2G4IXb9wComlxSKYsN6yWOKOnhQBPYdmnB7wolje0'
+  CONSUMER_KEY = ''
+  CONSUMER_SECRET = ''
+  ACCESS_TOKEN = ''
+  ACCESS_TOKEN_SECRET = ''
 # ログイン
  client = Twitter::REST::Client.new do |config|
   config.consumer_key        = CONSUMER_KEY
